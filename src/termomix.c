@@ -25,14 +25,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
-#include <unistd.h>
-#include <wchar.h>
 #include <math.h>
-#include <sys/types.h>
 #include <sys/wait.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <locale.h>
 #include <libintl.h>
 #include <glib.h>
@@ -228,28 +222,23 @@ static void termomix_config_done() {
 }
 
 
-static gboolean
-termomix_delete_event (GtkWidget *widget, void *data)
-{
+static gboolean termomix_delete_event (GtkWidget *widget, void *data) {
     termomix_config_done();
     return FALSE;
 }
 
 
-static void
-termomix_destroy_window (GtkWidget *widget, void *data)
-{
+static void termomix_destroy_window (GtkWidget *widget, void *data) {
     termomix_destroy();
 }
 
 
-static void
-termomix_font_dialog (GtkWidget *widget, void *data)
-{
+static void termomix_font_dialog (GtkWidget *widget, void *data) {
     GtkWidget *font_dialog;
     gint response;
 
-    font_dialog=gtk_font_chooser_dialog_new(gettext("Select font"), GTK_WINDOW(termomix.main_window));
+    font_dialog=gtk_font_chooser_dialog_new(gettext("Select font"),
+            GTK_WINDOW(termomix.main_window));
     gtk_font_chooser_set_font_desc(GTK_FONT_CHOOSER(font_dialog), termomix.font);
 
     response=gtk_dialog_run(GTK_DIALOG(font_dialog));
@@ -259,16 +248,15 @@ termomix_font_dialog (GtkWidget *widget, void *data)
         termomix.font=gtk_font_chooser_get_font_desc(GTK_FONT_CHOOSER(font_dialog));
         termomix_set_font();
         termomix_set_size(termomix.columns, termomix.rows);
-        termomix_set_config_string("font", pango_font_description_to_string(termomix.font));
+        termomix_set_config_string("font",
+                pango_font_description_to_string(termomix.font));
     }
 
     gtk_widget_destroy(font_dialog);
 }
 
 
-static void
-termomix_color_dialog (GtkWidget *widget, void *data)
-{
+static void termomix_color_dialog (GtkWidget *widget, void *data) {
     GtkWidget *color_dialog;
     GtkWidget *label1, *label2;
     GtkWidget *buttonfore, *buttonback;
@@ -286,7 +274,9 @@ termomix_color_dialog (GtkWidget *widget, void *data)
     gchar *css = g_strdup_printf (HIG_DIALOG_CSS);
     gtk_css_provider_load_from_data(termomix.provider, css, -1, NULL);
     GtkStyleContext *context = gtk_widget_get_style_context (color_dialog);
-    gtk_style_context_add_provider (context, GTK_STYLE_PROVIDER (termomix.provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    gtk_style_context_add_provider (context, 
+            GTK_STYLE_PROVIDER(termomix.provider),
+            GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     g_free(css);
 
     hbox_fore=gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 12);
@@ -354,9 +344,7 @@ termomix_color_dialog (GtkWidget *widget, void *data)
 }
 
 
-static void
-termomix_opacity_dialog (GtkWidget *widget, void *data)
-{
+static void termomix_opacity_dialog (GtkWidget *widget, void *data) {
     GtkWidget *opacity_dialog, *spin_control, *spin_label;//, *check;
     GtkAdjustment *spinner_adj;
     GtkWidget *dialog_hbox, *dialog_vbox, *dialog_spin_hbox;
@@ -373,7 +361,9 @@ termomix_opacity_dialog (GtkWidget *widget, void *data)
     gchar *css = g_strdup_printf (HIG_DIALOG_CSS);
     gtk_css_provider_load_from_data(termomix.provider, css, -1, NULL);
     GtkStyleContext *context = gtk_widget_get_style_context (opacity_dialog);
-    gtk_style_context_add_provider (context, GTK_STYLE_PROVIDER (termomix.provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    gtk_style_context_add_provider (context,
+            GTK_STYLE_PROVIDER(termomix.provider),
+            GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     g_free(css);
 
     spinner_adj = gtk_adjustment_new ((termomix.opacity_level), 0.0, 99.0, 1.0, 5.0, 0);
@@ -384,7 +374,8 @@ termomix_opacity_dialog (GtkWidget *widget, void *data)
     dialog_vbox=gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     dialog_spin_hbox=gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-    gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(opacity_dialog))), dialog_hbox, FALSE, FALSE, 6);
+    gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(
+            GTK_DIALOG(opacity_dialog))), dialog_hbox, FALSE, FALSE, 6);
     gtk_box_pack_start(GTK_BOX(dialog_hbox), dialog_vbox, FALSE, FALSE, 12);
     gtk_box_pack_start(GTK_BOX(dialog_spin_hbox), spin_label, FALSE, FALSE, 6);
     gtk_box_pack_start(GTK_BOX(dialog_spin_hbox), spin_control, FALSE, FALSE, 6);
@@ -422,65 +413,68 @@ termomix_opacity_dialog (GtkWidget *widget, void *data)
 }
 
 
-static void
-termomix_set_title_dialog (GtkWidget *widget, void *data)
-{
+static void termomix_set_title_dialog (GtkWidget *widget, void *data) {
     GtkWidget *title_dialog;
     GtkWidget *entry, *label;
     GtkWidget *title_hbox;
     gint response;
 
-    title_dialog=gtk_dialog_new_with_buttons(gettext("Set window title"), GTK_WINDOW(termomix.main_window), GTK_DIALOG_MODAL,
-                                             GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
-                                             GTK_STOCK_APPLY, GTK_RESPONSE_ACCEPT, NULL);
+    title_dialog=gtk_dialog_new_with_buttons(gettext("Set window title"),
+            GTK_WINDOW(termomix.main_window), GTK_DIALOG_MODAL,
+            GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT, GTK_STOCK_APPLY,
+            GTK_RESPONSE_ACCEPT, NULL);
 
-    gtk_dialog_set_default_response(GTK_DIALOG(title_dialog), GTK_RESPONSE_ACCEPT);
+    gtk_dialog_set_default_response(GTK_DIALOG(title_dialog),
+            GTK_RESPONSE_ACCEPT);
     gtk_window_set_modal(GTK_WINDOW(title_dialog), TRUE);
     /* Set style */
     gchar *css = g_strdup_printf (HIG_DIALOG_CSS);
     gtk_css_provider_load_from_data(termomix.provider, css, -1, NULL);
     GtkStyleContext *context = gtk_widget_get_style_context (title_dialog);
-    gtk_style_context_add_provider (context, GTK_STYLE_PROVIDER (termomix.provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    gtk_style_context_add_provider (context,
+            GTK_STYLE_PROVIDER(termomix.provider),
+            GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     g_free(css);
 
     entry=gtk_entry_new();
     label=gtk_label_new(gettext("New window title"));
     title_hbox=gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     /* Set window label as entry default text */
-    gtk_entry_set_text(GTK_ENTRY(entry), gtk_window_get_title(GTK_WINDOW(termomix.main_window)));
+    gtk_entry_set_text(GTK_ENTRY(entry),
+            gtk_window_get_title(GTK_WINDOW(termomix.main_window)));
     gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
     gtk_box_pack_start(GTK_BOX(title_hbox), label, TRUE, TRUE, 12);
     gtk_box_pack_start(GTK_BOX(title_hbox), entry, TRUE, TRUE, 12);
-    gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(title_dialog))), title_hbox, FALSE, FALSE, 12);
+    gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(
+            GTK_DIALOG(title_dialog))), title_hbox, FALSE, FALSE, 12);
     /* Disable accept button until some text is entered */
-    g_signal_connect(G_OBJECT(entry), "changed", G_CALLBACK(termomix_setname_entry_changed), title_dialog);
-    gtk_dialog_set_response_sensitive(GTK_DIALOG(title_dialog), GTK_RESPONSE_ACCEPT, FALSE);
+    g_signal_connect(G_OBJECT(entry), "changed",
+            G_CALLBACK(termomix_setname_entry_changed), title_dialog);
+    gtk_dialog_set_response_sensitive(GTK_DIALOG(title_dialog),
+            GTK_RESPONSE_ACCEPT, FALSE);
 
     gtk_widget_show_all(title_hbox);
 
     response=gtk_dialog_run(GTK_DIALOG(title_dialog));
     if (response==GTK_RESPONSE_ACCEPT) {
         /* Bug #257391 shadow reachs here too... */
-        gtk_window_set_title(GTK_WINDOW(termomix.main_window), gtk_entry_get_text(GTK_ENTRY(entry)));
+        gtk_window_set_title(GTK_WINDOW(termomix.main_window),
+                gtk_entry_get_text(GTK_ENTRY(entry)));
     }
     gtk_widget_destroy(title_dialog);
 
 }
 
 
-static void
-termomix_select_background_dialog (GtkWidget *widget, void *data)
-{
+static void termomix_select_background_dialog(GtkWidget *widget, void *data) {
     GtkWidget *dialog;
     gint response;
     gchar *filename;
 
-    dialog = gtk_file_chooser_dialog_new (gettext("Select a background file"), GTK_WINDOW(termomix.main_window),
-                                                                         GTK_FILE_CHOOSER_ACTION_OPEN,
-                                                                         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                                                                         GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-                                                                         NULL);
-
+    dialog = gtk_file_chooser_dialog_new (gettext("Select a background file"),
+            GTK_WINDOW(termomix.main_window), GTK_FILE_CHOOSER_ACTION_OPEN,
+            GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
+            GTK_RESPONSE_ACCEPT, NULL);
 
     response=gtk_dialog_run(GTK_DIALOG(dialog));
     if (response == GTK_RESPONSE_ACCEPT) {
@@ -495,9 +489,7 @@ termomix_select_background_dialog (GtkWidget *widget, void *data)
 }
 
 
-static void
-termomix_copy_url (GtkWidget *widget, void *data)
-{
+static void termomix_copy_url(GtkWidget *widget, void *data) {
     GtkClipboard* clip;
 
     clip = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
@@ -508,9 +500,7 @@ termomix_copy_url (GtkWidget *widget, void *data)
 }
 
 
-static void
-termomix_open_url (GtkWidget *widget, void *data)
-{
+static void termomix_open_url(GtkWidget *widget, void *data) {
     GError *error=NULL;
     gchar *cmd;
     gchar *browser=NULL;
@@ -535,9 +525,7 @@ termomix_open_url (GtkWidget *widget, void *data)
 }
 
 
-static void
-termomix_clear (GtkWidget *widget, void *data)
-{
+static void termomix_clear(GtkWidget *widget, void *data) {
     gtk_widget_hide(termomix.item_clear_background);
 
     vte_terminal_set_background_image(VTE_TERMINAL(termomix.term->vte), NULL);
@@ -831,9 +819,7 @@ static void termomix_init() {
 }
 
 
-static void
-termomix_init_popup()
-{
+static void termomix_init_popup() {
     GtkWidget *item_copy, *item_paste, *item_select_font, *item_select_colors,
             *item_select_background, *item_set_title, *item_options,
             *item_input_methods, *item_opacity_menu, *item_cursor,
@@ -968,9 +954,7 @@ termomix_init_popup()
 }
 
 
-static void
-termomix_destroy()
-{
+static void termomix_destroy() {
     g_key_file_free(termomix.cfg);
 
     pango_font_description_free(termomix.font);
@@ -984,9 +968,7 @@ termomix_destroy()
 }
 
 
-static void
-termomix_set_size(gint columns, gint rows)
-{
+static void termomix_set_size(gint columns, gint rows) {
     gint pad_x, pad_y;
     gint char_width, char_height;
 
@@ -1013,16 +995,12 @@ termomix_set_size(gint columns, gint rows)
 }
 
 
-static void
-termomix_set_font()
-{
+static void termomix_set_font() {
     vte_terminal_set_font(VTE_TERMINAL(termomix.term->vte), termomix.font);
 }
 
 
-static void
-termomix_add_tab()
-{
+static void termomix_init_terminal() {
     gchar *cwd = NULL;
 
     termomix.term = g_new0( struct terminal, 1 );
@@ -1193,9 +1171,7 @@ static void termomix_set_bgimage(char *infile) {
 }
 
 
-static void
-termomix_set_config_key(const gchar *key, guint value)
-{
+static void termomix_set_config_key(const gchar *key, guint value) {
     char *valname;
 
     valname=gdk_keyval_name(value);
@@ -1205,9 +1181,7 @@ termomix_set_config_key(const gchar *key, guint value)
 } 
 
 
-static guint
-termomix_get_config_key(const gchar *key)
-{
+static guint termomix_get_config_key(const gchar *key) {
     gchar *value;
     guint retval=GDK_KEY_VoidSymbol;
 
@@ -1227,9 +1201,7 @@ termomix_get_config_key(const gchar *key)
 }
 
 
-static void
-termomix_error(const char *format, ...)
-{
+static void termomix_error(const char *format, ...) {
     GtkWidget *dialog;
     va_list args;
     char* buff;
@@ -1249,9 +1221,7 @@ termomix_error(const char *format, ...)
 }
 
 
-int
-main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     gchar *localedir;
     GError *error=NULL;
     GOptionContext *context;
@@ -1306,13 +1276,9 @@ main(int argc, char **argv)
 
     g_strfreev(nargv);
 
-    /* Init stuff */
     termomix_init();
+    termomix_init_terminal();
     
-    /* Add first tab */
-    termomix_add_tab();
-    
-    /* Fill Input Methods menu */
     vte_terminal_im_append_menuitems(VTE_TERMINAL(termomix.term->vte), GTK_MENU_SHELL(termomix.im_menu));
 
     gtk_main();

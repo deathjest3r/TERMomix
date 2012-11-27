@@ -1,7 +1,7 @@
 #ifndef __TERMOMIX_H__
 #define __TERMOMIX_H__
 
-#define VERSION "0.1"
+#define VERSION "0.2"
 #define DATADIR "/usr/local/share"
 #define BUILDTYPE ""
 
@@ -74,13 +74,11 @@ static struct {
     char *background;
     char *word_chars;
     gint copy_accelerator;
-    gint scrollbar_accelerator;
     gint open_url_accelerator;
     gint font_size_accelerator;
     gint copy_key;
     gint paste_key;
     gint scrollbar_key;
-    gint set_tab_name_key;
     GRegex *http_regexp;
     char *argv[3];
 } termomix;
@@ -161,7 +159,7 @@ static void     termomix_error(const char *, ...);
 static void     termomix_init();
 static void     termomix_init_popup();
 static void     termomix_destroy();
-static void     termomix_add_tab();
+static void     termomix_init_terminal();
 static void     termomix_set_font();
 static void     termomix_set_size(gint, gint);
 static void     termomix_set_bgimage();
