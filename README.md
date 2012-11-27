@@ -1,4 +1,4 @@
 TERMomix
 ========
 
-Simple GTK based terminal application, which works great with i3wm
+Simple GTK based terminal application, which works great with i3wm.
